@@ -1,8 +1,10 @@
 import React from 'react';
 import { useState, useEffect } from 'react'
-import Search from './components/search';
+import Search from './components/Search';
+import Spinner from './components/Spinner';
+import MovieCard from './components/MovieCard';
 
-const API_BASE_URL = 'https://api.themoviedb.org/3/discover/movie';
+const API_BASE_URL = 'https://api.themoviedb.org/3';
 
 const API_KEY = import.meta.env.VITE_TMBD_API_KEY;
 
@@ -18,14 +20,14 @@ const App = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [movieList, setMovieList] = useState([]);
-  const [isLoading, seIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const fetchMovies = async () => {
     setIsLoading(true);
     setErrorMessage('');
 
     try {
-      const endpoint = `${API_BASE_URL}/discover/movie?sort_by_popularity.desc`; // This will fetch all the movies
+      const endpoint = `${API_BASE_URL}/discover/movie?sort_by=popularity.desc`; // This will fetch all the movies
 
       const response = await fetch(endpoint, API_OPTIONS);
 
@@ -58,23 +60,23 @@ const App = () => {
       <div className="pattern" />
       <div className="wrapper">
         <header>
-          <img src="./hero.png" alt="Hero Banner" />
+          <img src="/hero.png" alt="Hero Banner" />
           <h1>Find <span className="text-gradient">Movies</span> You'll Enjoy Without the Hassle</h1>
           
           <Search searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
         </header>
 
         <section className="all-movies">
-          <h2>All Movies</h2>
+          <h2 className="mt-40px">All Movies</h2>
 
           {isLoading ? (
-            <p className="text-white">Loading ...</p>
+            <Spinner />
           ) : errorMessage ? (
             <p className="text-red-500">{errorMessage}</p>
           ) : (
             <ul>
               {movieList.map((movie) => (
-                <p>{movie.title}</p>
+                <MovieCard key={movie.id} movie={movie} />
               ))}
             </ul>
           )}
