@@ -1,5 +1,6 @@
 import React from 'react';
-import { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react';
+import { useDebounce } from './hooks/useDebounce';
 import Search from './components/Search';
 import Spinner from './components/Spinner';
 import MovieCard from './components/MovieCard';
@@ -21,6 +22,9 @@ const App = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [movieList, setMovieList] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  // Debounce the search term in order to prevent making too many API requests.
+  // by waiting for the user to stop typing for 500ms (half a sec)
+  const debouncedSearchTerm  = useDebounce(searchTerm, 500);
 
   const fetchMovies = async (query = '') => {
     setIsLoading(true);
@@ -39,12 +43,6 @@ const App = () => {
 
       const data = await response.json();
 
-      if(data.Response === 'False') {
-        setErrorMessage(data.Error || 'Failed to fetch movies');
-        setMovieList([]);
-        return;
-      }
-
       setMovieList(data.results || []); // This will populate the movie list with real movies.
 
     } catch (error) {
@@ -54,8 +52,8 @@ const App = () => {
     }
   }
   useEffect(() => {
-    fetchMovies(searchTerm);
-  }, [searchTerm]);
+    fetchMovies(debouncedSearchTerm);
+  }, [debouncedSearchTerm]);
   return (
     <main>
       
