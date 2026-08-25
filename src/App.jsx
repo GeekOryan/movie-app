@@ -23,9 +23,8 @@ const App = () => {
   const [movieList, setMovieList] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [trendingMovies, setTrendingMovies] = useState([]);
-  // Debounce the search term in order to prevent making too many API requests.
-  // by waiting for the user to stop typing for 500ms (half a sec)
-  const debouncedSearchTerm  = useDebounce(searchTerm, 500);
+  
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
   const fetchMovies = async (query = '') => {
     setIsLoading(true);
@@ -33,60 +32,57 @@ const App = () => {
 
     try {
       const endpoint = query
-      ? `${API_BASE_URL}/search/movie?query=${encodeURIComponent(query)}`
-      : `${API_BASE_URL}/discover/movie?sort_by=popularity.desc`; // This will fetch all the movies
+        ? `${API_BASE_URL}/search/movie?query=${encodeURIComponent(query)}`
+        : `${API_BASE_URL}/discover/movie?sort_by=popularity.desc`;
 
       const response = await fetch(endpoint, API_OPTIONS);
 
-      if(!response.ok) {
-        throw new Error('Failed to fetch movies');
-      }
+      if (!response.ok) throw new Error('Failed to fetch movies');
 
       const data = await response.json();
+      setMovieList(data.results || []);
 
-      setMovieList(data.results || []); // This will populate the movie list with real movies.
-
-      if (query && data.results.length > 0) {
+      if (query && data.results && data.results.length > 0) {
         await updateSearchCount(query, data.results[0]);
+        
+        // FIX: Refresh the trending list immediately after saving
+        const movies = await getTrendingMovies();
+        setTrendingMovies(movies);
       }
 
     } catch (error) {
       console.error(`Error fetching movies: ${error}`);
+      setErrorMessage('Error fetching movies. Please try again later.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Load the trending movies when the app initially opens
-  useEffect(() => {
-    const loadingTrending = async () => {
-      const movies = await getTrendingMovies();
-      setTrendingMovies(movies);
-    };
-    loadingTrending();
-  }, []);
-
-  // Fetch movies when the debounced search term changes
   useEffect(() => {
     fetchMovies(debouncedSearchTerm);
   }, [debouncedSearchTerm]);
 
+  useEffect(() => {
+    const loadTrending = async () => {
+      const movies = await getTrendingMovies();
+      setTrendingMovies(movies);
+    };
+    loadTrending();
+  }, []);
+
   return (
     <main>
-      
       <div className="pattern" />
       <div className="wrapper">
         <header>
           <img src="/hero.png" alt="Hero Banner" />
           <h1>Find <span className="text-gradient">Movies</span> You'll Enjoy Without the Hassle</h1>
-          
           <Search searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
         </header>
 
-        {/* TRENDING MOVIES SECTION */}
         {trendingMovies.length > 0 && (
           <section className="trending">
-            <h2>Trending Searches</h2>
+            <h2>Trending Movies</h2>
             <ul>
               {trendingMovies.map((movie, index) => (
                 <li key={movie.$id}>
@@ -99,8 +95,7 @@ const App = () => {
         )}
 
         <section className="all-movies">
-          <h2 className="mt-40px">All Movies</h2>
-
+          <h2 className="mt-10">All Movies</h2>
           {isLoading ? (
             <Spinner />
           ) : errorMessage ? (
@@ -115,7 +110,7 @@ const App = () => {
         </section>
       </div>
     </main>
-  )
-}
+  );
+};
 
-export default App
+export default App;

@@ -1,9 +1,8 @@
 import { Client, Databases, ID, Query } from 'appwrite';
 
-// Hardcoded IDs (Verified from your logs)
-const PROJECT_ID = '6a8c4647003a11fa9d9b';
-const DATABASE_ID = '6a8c48cd000035d93b37';
-const TABLE_ID = 'metrics'; // This is your Table ID
+const PROJECT_ID = import.meta.env.VITE_APPWRITE_PROJECT_ID;
+const DATABASE_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID;
+const TABLE_ID = import.meta.env.VITE_APPWRITE_TABLE_ID;
 
 console.log('Appwrite Init:', { PROJECT_ID, DATABASE_ID, TABLE_ID });
 
@@ -16,8 +15,7 @@ const databases = new Databases(client);
 export const updateSearchCount = async (searchTerm, movie) => {
     console.log('updateSearchCount called with:', searchTerm, movie);
     try {
-        const normalizedTerm = searchTerm.toLowerCase();
-        // 1. Check if this search term already exists
+        // 1. Checking if this search term already exists
         const result = await databases.listDocuments(DATABASE_ID, TABLE_ID, [
             Query.equal('searchTerm', searchTerm)
         ]);
@@ -33,7 +31,7 @@ export const updateSearchCount = async (searchTerm, movie) => {
         } else {
             console.log('Creating new document');
             await databases.createDocument(DATABASE_ID, TABLE_ID, ID.unique(), {
-                searchTerm: normalizedTerm, // Save the lowercase version
+                searchTerm,
                 count: 1,
                 movie_id: movie.id,
                 poster_url: `https://image.tmdb.org/t/p/w500${movie.poster_path}`,
@@ -42,7 +40,6 @@ export const updateSearchCount = async (searchTerm, movie) => {
         console.log('updateSearchCount SUCCESS');
     } catch (error) {
         console.error("Appwrite updateSearchCount Error:", error);
-        // Use console.error instead of alert - alerts can be blocked in async contexts
     }
 };
 
