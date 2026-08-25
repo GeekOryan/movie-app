@@ -5,6 +5,7 @@ import Search from './components/Search';
 import Spinner from './components/Spinner';
 import MovieCard from './components/MovieCard';
 import { getTrendingMovies, updateSearchCount } from './appwrite';
+import GenreSelector from './components/GenreSelector';
 
 const API_BASE_URL = 'https://api.themoviedb.org/3';
 const API_KEY = import.meta.env.VITE_TMBD_API_KEY;
@@ -78,6 +79,7 @@ const App = () => {
           <img src="/hero.png" alt="Hero Banner" />
           <h1>Find <span className="text-gradient">Movies</span> You'll Enjoy Without the Hassle</h1>
           <Search searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+          <GenreSelector />
         </header>
 
         {trendingMovies.length > 0 && (
