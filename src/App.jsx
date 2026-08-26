@@ -28,31 +28,32 @@ const App = () => {
   const [trendingMovies, setTrendingMovies] = useState([]);
   const [selectedMovie, setSelectedMovie] = useState(null);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
   const handleMovieClick = async (movie) => {
-    setIsLoading(true);
-    try{
+    setIsLoadingDetails(true);
+    try {
       const detailedMovieData = await getMovieDetails(movie.id);
       if (detailedMovieData && detailedMovieData.success !== false) {
-      setSelectedMovie(detailedMovieData);
+        setSelectedMovie(detailedMovieData);
       }
     } catch (error) {
-      console.error("Error loading movie detals:", error);
+      console.error("Error loading movie details:", error);
     } finally {
       setIsLoadingDetails(false);
     }
   };
 
-  const fetchMovies = async (query = '') => {
+  // trackSearch = false on refresh, so we don't inflate your trending counts
+  const fetchMovies = async (query = '', page = 1, trackSearch = true) => {
     setIsLoading(true);
     setErrorMessage('');
 
-
     try {
       const endpoint = query
-        ? `${API_BASE_URL}/search/movie?query=${encodeURIComponent(query)}`
-        : `${API_BASE_URL}/discover/movie?sort_by=popularity.desc`;
+        ? `${API_BASE_URL}/search/movie?query=${encodeURIComponent(query)}&page=${page}`
+        : `${API_BASE_URL}/discover/movie?sort_by=popularity.desc&page=${page}`;
 
       const response = await fetch(endpoint, API_OPTIONS);
 
@@ -61,10 +62,8 @@ const App = () => {
       const data = await response.json();
       setMovieList(data.results || []);
 
-      if (query && data.results && data.results.length > 0) {
+      if (trackSearch && query && data.results && data.results.length > 0) {
         await updateSearchCount(query, data.results[0]);
-        
-        // FIX: Refresh the trending list immediately after saving
         const movies = await getTrendingMovies();
         setTrendingMovies(movies);
       }
@@ -77,8 +76,15 @@ const App = () => {
     }
   };
 
+  const handleRefreshMovies = () => {
+    const nextPage = currentPage + 1;
+    setCurrentPage(nextPage);
+    fetchMovies(debouncedSearchTerm, nextPage, false);
+  };
+
   useEffect(() => {
-    fetchMovies(debouncedSearchTerm);
+    setCurrentPage(1);
+    fetchMovies(debouncedSearchTerm, 1);
   }, [debouncedSearchTerm]);
 
   useEffect(() => {
@@ -91,10 +97,9 @@ const App = () => {
 
   return (
     <main>
-      <div className="pattern" />
       <div className="wrapper">
         <header>
-          <img src="/hero.png" alt="Hero Banner" />
+          <img src="/logo.png" alt="Logo" />
           <h1>Find <span className="text-gradient">Movies</span> You'll Enjoy Without the Hassle</h1>
           <Search searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
           <GenreSelector onMovieClick={handleMovieClick} />
@@ -115,8 +120,17 @@ const App = () => {
         )}
 
         <section className="all-movies">
-          <h2 className="mt-10">All Movies</h2>
-          {isLoading ? (
+          <div className="mt-10 flex items-center justify-between gap-4">
+            <h2>All Movies</h2>
+            <button
+              onClick={handleRefreshMovies}
+              disabled={isLoading}
+              className="px-4 py-2 border border-[#d4af37]/40 text-[#d4af37] rounded-lg text-sm font-medium hover:bg-[#d4af37]/10 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? 'Loading...' : '🔄 Show me different movies'}
+            </button>
+          </div>
+          {isLoading && movieList.length === 0 ? (
             <Spinner />
           ) : errorMessage ? (
             <p className="text-red-500">{errorMessage}</p>
@@ -130,14 +144,14 @@ const App = () => {
           )}
         </section>
       </div>
-      
+
       {isLoadingDetails && (
-        <div className="fixed inset-0 z-50 bg-black/70 fle flex-col items-center justify-center gap-4">
-          <div className="h-14 w-14 animate-spin rounded-full border-4 border-white/20 border-t-[#AB8BFF]"></div>
+        <div className="fixed inset-0 z-50 bg-black/70 flex flex-col items-center justify-center gap-4">
+          <div className="h-14 w-14 animate-spin rounded-full border-4 border-white/20 border-t-[#d4af37]"></div>
           <p className="text-white font-medium">Loading movie details...</p>
         </div>
       )}
-      
+
       {selectedMovie && (
         <MovieModal movie={selectedMovie} onClose={() => setSelectedMovie(null)} />
       )}

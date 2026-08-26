@@ -4,14 +4,17 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #030014;
+  --color-primary: #070605;
 
-  --color-light-100: #cecefb;
-  --color-light-200: #a8b5db;
+  --color-light-100: #f2e8d5;
+  --color-light-200: #c9b899;
 
   --color-gray-100: #9ca4ab;
 
-  --color-dark-100: #0f0d23;
+  --color-dark-100: #161310;
+  --color-dark-200: #211d18;
+
+  --color-accent: #d4af37;
 
   --font-dm-sans: DM Sans, sans-serif;
 
@@ -24,7 +27,9 @@
   body {
     font-family: "DM Sans", serif;
     font-optical-sizing: auto;
-    background: #030014;
+    background:
+      radial-gradient(ellipse 80% 50% at 50% -10%, rgba(212, 175, 55, 0.12), transparent 70%),
+      #070605;
   }
 
   h1 {
@@ -44,7 +49,7 @@
   }
 
   header img {
-    @apply w-full max-w-lg h-auto object-contain mx-auto drop-shadow-md;
+  @apply w-full max-w-[220px] h-auto object-contain mx-auto drop-shadow-md;
   }
 }
 
@@ -143,11 +148,11 @@
 }
 
 @utility text-gradient {
-  @apply bg-linear-to-r from-[#D6C7FF] to-[#AB8BFF] bg-clip-text text-transparent;
+  @apply bg-linear-to-r from-[#f6e7c1] to-[#d4af37] bg-clip-text text-transparent;
 }
 
 @utility fancy-text {
-  -webkit-text-stroke: 5px rgba(206, 206, 251, 0.5);
+  -webkit-text-stroke: 5px rgba(212, 175, 55, 0.45);
   font-size: 190px;
   font-family: "Bebas Neue", sans-serif;
 }

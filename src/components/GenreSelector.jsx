@@ -101,7 +101,7 @@ const GenreSelector = ({ onMovieClick }) => {
             <button
                 onClick={handleGetRecommendations}
                 disabled={isLoading || selectedGenreIds.length === 0}
-                className="mt-6 w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-[#D6C7FF] to-[#AB8BFF] text-primary font-bold rounded-lg transition-opacity disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90"
+                className="mt-6 w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-[#f6e7c1] to-[#d4af37] text-primary font-bold rounded-lg transition-opacity disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90"
             >
                 {isLoading ? 'Finding Movies...' : 'Get Recommendations'}
             </button>
@@ -115,7 +115,7 @@ const GenreSelector = ({ onMovieClick }) => {
                     <button 
                         onClick={handleRefresh}
                         disabled={isLoading} 
-                        className="mb-5 px-4 py-2 bg-dark-200 border border-light-100/20 text-light-100 rounded-lg text-sm font-medium hover:bg-light-100/10 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="mb-5 px-4 py-2 border border-[#d4af37]/40 text-[#d4af37] rounded-lg text-sm font-medium hover:bg-[#d4af37]/10 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {isLoading ? 'Loading...' : '🔄️ Show me different movies'}
                     </button>
