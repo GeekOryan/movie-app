@@ -8,6 +8,7 @@ const API_OPTIONS = {
         Authorization: `Bearer ${API_KEY}`
     }
 };
+
 // Fetches the list of all available movie genres from TMBD 
 export const getGenres = async () => {
     try {
@@ -30,11 +31,11 @@ export const getGenres = async () => {
 
 // Fetching movie recommendations based on an array of genre IDs
 
-export const getRecommendations = async (genreIds) => {
+export const getRecommendations = async (genreIds, currentPage = 1) => {
     try {
         const genreString = genreIds.join(',');
-
-        const url = `${API_BASE_URL}/discover/movie?with_genres=${genreString}&sort_by=popularity.desc`;
+        
+        const url = `${API_BASE_URL}/discover/movie?with_genres=${genreString}&sort_by=vote_average.desc&vote_count.gte=500&vote_average.gte=7.0&page=${currentPage}`;
 
         const response = await fetch(url, API_OPTIONS);
 

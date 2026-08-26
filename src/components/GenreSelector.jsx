@@ -16,6 +16,8 @@ const GenreSelector = () => {
                         .map((genre) => genre.name)
                         .join(', ')
 
+    const [currentPage, setCurrentPage] = useState(1);
+
     useEffect(() => {
         const fetchGenres = async () => {
             const tmdbGenres = await getGenres();
@@ -41,8 +43,10 @@ const GenreSelector = () => {
 
         setIsLoading(true);
         try {
+
+            setCurrentPage(1);
             // Calling the function from tmdb.js
-            const movies = await getRecommendations(selectedGenreIds);
+            const movies = await getRecommendations(selectedGenreIds, 1);
 
             setRecommendedMovies(movies);
 
@@ -50,6 +54,21 @@ const GenreSelector = () => {
             console.error("Error getting recommendations:", error);
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const handleRefresh = async () => {
+        try {
+            const nextPage = currentPage + 1;
+            setIsLoading(true);
+            const movies = await getRecommendations(selectedGenreIds, nextPage);
+
+            setRecommendedMovies(movies);
+            setCurrentPage(nextPage);
+        } catch (error) {
+            console.error("Failed to refresh movies:", error);
+        } finally {
+            setIsLoading(false)
         }
     };
 
@@ -89,9 +108,17 @@ const GenreSelector = () => {
 
             {recommendedMovies.length > 0 && (
                 <div className="mt-10">
-                    <h3 className="text-xl font-bold text-white mb-5">
-                        Because you picked: {selectedGenreNames}
+                    <h3 className="text-xl font-bold text-white mb-5 flex items-center justify-between mb-5">
+                        Because you picked: <span className="text-gradient">{selectedGenreNames}</span>
                     </h3>
+
+                    <button 
+                        onClick={handleRefresh}
+                        disabled={isLoading} 
+                        className="mb-5 px-4 py-2 bg-dark-200 border border-light-100/20 text-light-100 rounded-lg text-sm font-medium hover:bg-light-100/10 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {isLoading ? 'Loading...' : '🔄️ Show me different movies'}
+                    </button>
 
                     <ul className="grid grid-cols-1 gap-5 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                         {recommendedMovies.map((movie) => (
