@@ -13,7 +13,7 @@ export const getGenres = async () => {
     try {
         const url = `${API_BASE_URL}/genre/movie/list`;
 
-        const response = await fetch(url);
+        const response = await fetch(url, API_OPTIONS);
 
         if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);

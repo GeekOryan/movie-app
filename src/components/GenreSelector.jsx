@@ -1,15 +1,20 @@
 import { useState, useEffect } from 'react';
 import { getGenres, getRecommendations } from '../tmdb';
+import MovieCard from './MovieCard';
 
 const GenreSelector = () => {
     // The state to hold the list of all genres from TMDB
     const [genres, setGenres] = useState([]);
-
     // The state to hold the IDs of the genres the user has clicked
     const [selectedGenreIds, setSelectedGenreIds] = useState([]);
-
     // Loading state for when we are fetching recommendations
     const [isLoading, setIsLoading] = useState(false);
+    const [recommendedMovies, setRecommendedMovies] = useState([]);
+
+    const selectedGenreNames = genres
+                        .filter((genre) => selectedGenreIds.includes(genre.id))
+                        .map((genre) => genre.name)
+                        .join(', ')
 
     useEffect(() => {
         const fetchGenres = async () => {
@@ -39,7 +44,8 @@ const GenreSelector = () => {
             // Calling the function from tmdb.js
             const movies = await getRecommendations(selectedGenreIds);
 
-            console.log("Recommended Movies:", movies);
+            setRecommendedMovies(movies);
+
         } catch (error) {
             console.error("Error getting recommendations:", error);
         } finally {
@@ -76,11 +82,25 @@ const GenreSelector = () => {
             <button
                 onClick={handleGetRecommendations}
                 disabled={isLoading || selectedGenreIds.length === 0}
-                className="mt-6 w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-[#D6C7FF] to-[#AB8BFF] text-primary font-bold rounded-lg transition-opacity disabled:opacity-50 disable:cursor-not-allowed hover:opacity-90"
+                className="mt-6 w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-[#D6C7FF] to-[#AB8BFF] text-primary font-bold rounded-lg transition-opacity disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90"
             >
                 {isLoading ? 'Finding Movies...' : 'Get Recommendations'}
             </button>
-        </div>
+
+            {recommendedMovies.length > 0 && (
+                <div className="mt-10">
+                    <h3 className="text-xl font-bold text-white mb-5">
+                        Because you picked: {selectedGenreNames}
+                    </h3>
+
+                    <ul className="grid grid-cols-1 gap-5 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                        {recommendedMovies.map((movie) => (
+                            <MovieCard key={movie.id} movie={movie} />
+                        ))}
+                    </ul>
+                </div>
+            )}
+            </div>
     );
 };
 
