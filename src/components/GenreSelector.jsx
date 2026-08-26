@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { getGenres, getRecommendations } from '../tmdb';
 import MovieCard from './MovieCard';
 
-const GenreSelector = () => {
+const GenreSelector = ({ onMovieClick }) => {
     // The state to hold the list of all genres from TMDB
     const [genres, setGenres] = useState([]);
     // The state to hold the IDs of the genres the user has clicked
@@ -122,7 +122,8 @@ const GenreSelector = () => {
 
                     <ul className="grid grid-cols-1 gap-5 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                         {recommendedMovies.map((movie) => (
-                            <MovieCard key={movie.id} movie={movie} />
+                            <MovieCard key={movie.id} movie={movie} 
+                                onClick={() => onMovieClick(movie)} />
                         ))}
                     </ul>
                 </div>

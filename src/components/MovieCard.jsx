@@ -1,14 +1,18 @@
 import React from 'react'
 
-const MovieCard = ({ movie: { id, title, vote_average, poster_path, release_date, original_language }
-}) => {
+// Notice: onClick is OUTSIDE the movie destructuring. 
+// It is a completely separate prop.
+const MovieCard = ({ movie: { id, title, vote_average, poster_path, release_date, original_language }, onClick }) => {
     return (
-        <div className="movie-card">
+        // Notice: All Tailwind classes are INSIDE the quotes for className.
+        <button
+            onClick={onClick}
+            className="movie-card cursor-pointer hover:scale-105 transition-transform duration-300 w-full text-left"
+        >
             <img
                 src={poster_path ? `https://image.tmdb.org/t/p/w500${poster_path}` : 'https://placehold.co/500x750?text=No+Poster'}
                 alt={title}
             />
-            {/*<p key={id} className="text-white">{title}</p>*/}
 
             <div className="mt-4">
                 <h3>{title}</h3>
@@ -28,7 +32,7 @@ const MovieCard = ({ movie: { id, title, vote_average, poster_path, release_date
                     </p>
                 </div>
             </div>
-        </div>
+        </button>
     )
 }
 

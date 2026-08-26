@@ -6,6 +6,8 @@ import Spinner from './components/Spinner';
 import MovieCard from './components/MovieCard';
 import { getTrendingMovies, updateSearchCount } from './appwrite';
 import GenreSelector from './components/GenreSelector';
+import { getMovieDetails } from './tmdb';
+import MovieModal from './components/MovieModal';
 
 const API_BASE_URL = 'https://api.themoviedb.org/3';
 const API_KEY = import.meta.env.VITE_TMBD_API_KEY;
@@ -24,12 +26,28 @@ const App = () => {
   const [movieList, setMovieList] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [trendingMovies, setTrendingMovies] = useState([]);
-  
+  const [selectedMovie, setSelectedMovie] = useState(null);
+  const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
+
+  const handleMovieClick = async (movie) => {
+    setIsLoading(true);
+    try{
+      const detailedMovieData = await getMovieDetails(movie.id);
+      if (detailedMovieData && detailedMovieData.success !== false) {
+      setSelectedMovie(detailedMovieData);
+      }
+    } catch (error) {
+      console.error("Error loading movie detals:", error);
+    } finally {
+      setIsLoadingDetails(false);
+    }
+  };
 
   const fetchMovies = async (query = '') => {
     setIsLoading(true);
     setErrorMessage('');
+
 
     try {
       const endpoint = query
@@ -79,7 +97,7 @@ const App = () => {
           <img src="/hero.png" alt="Hero Banner" />
           <h1>Find <span className="text-gradient">Movies</span> You'll Enjoy Without the Hassle</h1>
           <Search searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
-          <GenreSelector />
+          <GenreSelector onMovieClick={handleMovieClick} />
         </header>
 
         {trendingMovies.length > 0 && (
@@ -105,12 +123,24 @@ const App = () => {
           ) : (
             <ul>
               {movieList.map((movie) => (
-                <MovieCard key={movie.id} movie={movie} />
+                <MovieCard key={movie.id} movie={movie}
+                  onClick={() => handleMovieClick(movie)} />
               ))}
             </ul>
           )}
         </section>
       </div>
+      
+      {isLoadingDetails && (
+        <div className="fixed inset-0 z-50 bg-black/70 fle flex-col items-center justify-center gap-4">
+          <div className="h-14 w-14 animate-spin rounded-full border-4 border-white/20 border-t-[#AB8BFF]"></div>
+          <p className="text-white font-medium">Loading movie details...</p>
+        </div>
+      )}
+      
+      {selectedMovie && (
+        <MovieModal movie={selectedMovie} onClose={() => setSelectedMovie(null)} />
+      )}
     </main>
   );
 };

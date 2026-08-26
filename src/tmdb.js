@@ -51,3 +51,18 @@ export const getRecommendations = async (genreIds, currentPage = 1) => {
         return [];
     };
 }
+
+export const getMovieDetails = async (movieId) => {
+    try {
+        const url = `${API_BASE_URL}/movie/${movieId}?append_to_response=videos,credits`;
+        
+        const response = await fetch(url, API_OPTIONS);
+
+        const data = await response.json();
+
+        return data;
+    } catch (error) {
+        console.log("error fetching movie details:", error);
+        return null;
+    }
+};
