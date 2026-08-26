@@ -47,7 +47,7 @@ export const getRecommendations = async (genreIds, currentPage = 1) => {
 
         return data.results;
     } catch (error) {
-        console.log("Error fetching recommendations:", error);
+        console.log("There was an error fetching recommendations:", error);
         return [];
     };
 }
