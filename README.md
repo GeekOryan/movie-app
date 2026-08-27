@@ -14,10 +14,9 @@
 |:---:|:---:|
 | ![Home](screenshots/HomePage.png) | ![Recommendations](screenshots/Recommendation.png) |
 
-| Movie Details Modal | |Movie Trailer| Trending Movies |
+| Movie Details Modal | Movie Trailer | Trending Movies |
 |:---:|:---:|:---:|
 | ![Movie Card Modal](screenshots/MovieCardModal.png) | ![Movie Card Modal Trailer](screenshots/MovieCardModalTrailer.png) | ![Trending](screenshots/TrendingMovies.png) |
-
 ---
 
 ## ✨ Features
