@@ -37,7 +37,6 @@ const GenreSelector = ({ onMovieClick }) => {
 
     const handleGetRecommendations = async () => {
         if (selectedGenreIds.length === 0) {
-            console.log("Please select at least one genre!");
             return;
         }
 

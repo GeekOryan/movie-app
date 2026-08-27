@@ -4,10 +4,8 @@ const PROJECT_ID = import.meta.env.VITE_APPWRITE_PROJECT_ID;
 const DATABASE_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID;
 const TABLE_ID = import.meta.env.VITE_APPWRITE_TABLE_ID;
 
-console.log('Appwrite Init:', { PROJECT_ID, DATABASE_ID, TABLE_ID });
-
 const client = new Client()
-    .setEndpoint('https://fra.cloud.appwrite.io/v1')
+    .setEndpoiFnt('https://fra.cloud.appwrite.io/v1')
     .setProject(PROJECT_ID);
 
 const databases = new Databases(client);
@@ -44,13 +42,11 @@ export const updateSearchCount = async (searchTerm, movie) => {
 };
 
 export const getTrendingMovies = async () => {
-    console.log('getTrendingMovies called');
     try {
         const result = await databases.listDocuments(DATABASE_ID, TABLE_ID, [
             Query.limit(5),
             Query.orderDesc('count')
         ]);
-        console.log('getTrendingMovies result:', result);
         return result.documents || [];
     } catch (error) {
         console.error("Appwrite getTrendingMovies Error:", error);
