@@ -1,5 +1,5 @@
 import React from 'react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useDebounce } from './hooks/useDebounce';
 import Search from './components/Search';
 import Spinner from './components/Spinner';
@@ -29,6 +29,7 @@ const App = () => {
   const [selectedMovie, setSelectedMovie] = useState(null);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const shownMovieIds = useRef(new Set());
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
   const handleMovieClick = async (movie) => {
@@ -60,10 +61,12 @@ const App = () => {
       if (!response.ok) throw new Error('Failed to fetch movies');
 
       const data = await response.json();
-      setMovieList(data.results || []);
+      const newMovies = (data.results || []).filter((movie) => !shownMovieIds.current.has(movie.id));
+      newMovies.forEach((movie) => shownMovieIds.current.add(movie.id));
+      setMovieList(newMovies);
 
-      if (trackSearch && query && data.results && data.results.length > 0) {
-        await updateSearchCount(query, data.results[0]);
+      if (trackSearch && query && newMovies.length > 0) {
+        await updateSearchCount(query, newMovies[0]);
         const movies = await getTrendingMovies();
         setTrendingMovies(movies);
       }
@@ -84,6 +87,7 @@ const App = () => {
 
   useEffect(() => {
     setCurrentPage(1);
+    shownMovieIds.current.clear();
     fetchMovies(debouncedSearchTerm, 1);
   }, [debouncedSearchTerm]);
 
