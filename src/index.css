@@ -27,6 +27,7 @@
   body {
     font-family: "DM Sans", serif;
     font-optical-sizing: auto;
+    overflow-x: hidden;
     background:
       radial-gradient(ellipse 80% 50% at 50% -10%, rgba(212, 175, 55, 0.12), transparent 70%),
       #070605;
@@ -41,7 +42,7 @@
   }
 
   main {
-    @apply min-h-screen relative bg-primary;
+    @apply relative min-h-screen overflow-x-hidden bg-primary;
   }
 
   header {
@@ -66,7 +67,7 @@
     @apply mt-20;
 
     & ul {
-      @apply flex flex-row overflow-y-auto gap-5 -mt-10 w-full hide-scrollbar;
+      @apply flex w-full flex-row gap-5 -mt-10 overflow-x-auto overflow-y-hidden hide-scrollbar;
     }
 
     & ul li {

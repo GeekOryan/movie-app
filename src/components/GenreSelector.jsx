@@ -186,24 +186,25 @@ const GenreSelector = ({ onMovieClick }) => {
         : SEED_MOVIE_SUGGESTIONS.slice(0, 5);
 
     return (
-        <div className="mt-10 p-6 bg-dark-100 rounded-2xl shadow-inner shadow-light-100/10">
-            <div className="mb-8 rounded-2xl border border-light-100/10 bg-gradient-to-br from-dark-200 to-dark-100 p-6">
-                <h2 className="mb-2 text-2xl font-bold text-white">Find movies like...</h2>
+        <div className="mt-10 rounded-2xl bg-dark-100 p-4 shadow-inner shadow-light-100/10 sm:p-6">
+            <div className="mb-8 rounded-2xl border border-light-100/10 bg-gradient-to-br from-dark-200 to-dark-100 p-4 sm:p-6">
+                <h2 className="mb-2 text-xl font-bold text-white sm:text-2xl">Find movies like...</h2>
                 <p className="mb-4 text-sm text-light-200">Type a movie you love, and we'll find similar heavy-hitters</p>
 
-                <div className="flex gap-3">
+                <div className="flex min-w-0 flex-col gap-3 sm:flex-row">
                     <input
                         type="text"
                         value={seedMovieTitle}
                         onChange={(e) => setSeedMovieTitle(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && handleSeedSearch()}
                         placeholder="e.g., John Wick, The Matrix, Inception..."
-                        className="flex-1 rounded-lg border border-light-100/20 bg-dark-100 px-4 py-3 text-white placeholder-light-200/50 transition-all focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+                        className="min-w-0 w-full flex-1 rounded-lg border border-light-100/20 bg-dark-100 px-4 py-3 text-white placeholder-light-200/50 transition-all focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
                     />
                     <button
+                        type="button"
                         onClick={handleSeedSearch}
                         disabled={isSearching || !seedMovieTitle.trim()}
-                        className="whitespace-nowrap rounded-lg bg-gradient-to-r from-[#f6e7c1] to-[#d4af37] px-6 py-3 font-bold text-primary transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                        className="w-full rounded-lg bg-gradient-to-r from-[#f6e7c1] to-[#d4af37] px-5 py-3 font-bold text-primary transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto sm:whitespace-nowrap"
                     >
                         {isSearching ? 'Searching...' : 'Find Similar'}
                     </button>
@@ -213,6 +214,7 @@ const GenreSelector = ({ onMovieClick }) => {
                     <span className="mr-1 text-xs text-light-200">Quick picks:</span>
                     {seedSuggestions.map((movie) => (
                         <button
+                            type="button"
                             key={movie}
                             onClick={() => setSeedMovieTitle(movie)}
                             className="rounded-full border border-light-100/15 bg-light-100/5 px-3 py-1.5 text-xs font-medium text-light-100 transition-all hover:border-accent/60 hover:bg-accent/15 hover:text-white"
@@ -237,7 +239,7 @@ const GenreSelector = ({ onMovieClick }) => {
                 <div className="h-px flex-1 bg-light-100/10"></div>
             </div>
 
-            <h2 className="text-2xl font-bold text-white mb-2">What are you in the mood for?</h2>
+            <h2 className="mb-2 text-xl font-bold text-white sm:text-2xl">What are you in the mood for?</h2>
             <p className="text-light-200 mb-5 text-sm">Select one or more genres and/or regions to get a personalized recommendation</p>
 
             <div className="flex flex-wrap gap-3 mb-4">
@@ -245,6 +247,7 @@ const GenreSelector = ({ onMovieClick }) => {
                     const isSelected = selectedGenreIds.includes(genre.id);
                     return (
                         <button
+                            type="button"
                             key={genre.id}
                             onClick={() => toggleGenre(genre.id)}
                             className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 border ${
@@ -265,6 +268,7 @@ const GenreSelector = ({ onMovieClick }) => {
                     const isSelected = selectedRegionIds.includes(region.id);
                     return (
                         <button
+                            type="button"
                             key={region.id}
                             onClick={() => toggleRegion(region.id)}
                             className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 border ${
@@ -300,6 +304,7 @@ const GenreSelector = ({ onMovieClick }) => {
 </div>
 
             <button
+                type="button"
                 onClick={handleGetRecommendations}
                 disabled={isLoading || (selectedGenreIds.length === 0 && selectedRegionIds.length === 0 && selectedVibeIds.length === 0)}
                 className="mt-6 w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-[#f6e7c1] to-[#d4af37] text-primary font-bold rounded-lg transition-opacity disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90"
@@ -313,7 +318,8 @@ const GenreSelector = ({ onMovieClick }) => {
                         Because you picked: <span className="text-gradient">{selectedGenreNames} {selectedRegionNames ? `• ${selectedRegionNames}` : ''}</span>
                     </h3>
 
-                    <button 
+                    <button
+                        type="button"
                         onClick={handleRefresh}
                         disabled={isLoading} 
                         className="mb-5 px-4 py-2 border border-[#d4af37]/40 text-[#d4af37] rounded-lg text-sm font-medium hover:bg-[#d4af37]/10 transition-all disabled:opacity-50 disabled:cursor-not-allowed"

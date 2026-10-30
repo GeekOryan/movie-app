@@ -63,9 +63,15 @@ const App = () => {
       if (!response.ok) throw new Error('Failed to fetch movies');
 
       const data = await response.json();
+      if (!Array.isArray(data.results)) {
+        throw new Error('Movie response did not contain a results list');
+      }
+
       const newMovies = (data.results || []).filter((movie) => !shownMovieIds.current.has(movie.id));
       newMovies.forEach((movie) => shownMovieIds.current.add(movie.id));
-      setMovieList(newMovies);
+      if (newMovies.length > 0) {
+        setMovieList(newMovies);
+      }
 
       if (trackSearch && query && newMovies.length > 0) {
         await updateSearchCount(query, newMovies[0]);
@@ -130,12 +136,13 @@ const App = () => {
         )}
 
         <section className="all-movies">
-          <div className="mt-10 flex items-center justify-between gap-4">
+          <div className="mt-10 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
             <h2>All Movies</h2>
             <button
+              type="button"
               onClick={handleRefreshMovies}
               disabled={isLoading}
-              className="px-4 py-2 border border-[#d4af37]/40 text-[#d4af37] rounded-lg text-sm font-medium hover:bg-[#d4af37]/10 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full px-4 py-2 border border-[#d4af37]/40 text-[#d4af37] rounded-lg text-sm font-medium hover:bg-[#d4af37]/10 transition-all disabled:opacity-50 disabled:cursor-not-allowed sm:w-auto"
             >
               {isLoading ? 'Loading...' : '🔄 Show me different movies'}
             </button>
