@@ -125,6 +125,10 @@ src/
 
 ---
 
+## Upcoming Features
+
+- Persistent Watchlist
+
 ## 🙏 Credits
 
 - Movie data & artwork: **TMDB** — *This product uses the TMDB API but is not endorsed or certified by TMDB.*
