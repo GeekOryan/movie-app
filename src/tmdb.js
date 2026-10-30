@@ -28,7 +28,7 @@ export const getGenres = async () => {
 }
 
 // Fetching movie recommendations based on genres, page, and region codes
-export const getRecommendations = async (genreIds, currentPage = 1, regionCodes = []) => {
+export const getRecommendations = async (genreIds, currentPage = 1, regionCodes = [], keywordIds = []) => {
     try {
         const params = new URLSearchParams({
             sort_by: 'popularity.desc',
@@ -37,13 +37,14 @@ export const getRecommendations = async (genreIds, currentPage = 1, regionCodes 
             page: String(currentPage),
         });
 
-        // TMDB uses "|" for OR and "," for AND in these filters. Selecting
-        // multiple genres or countries should broaden the result set.
         if (genreIds.length > 0) {
             params.set('with_genres', genreIds.join('|'));
         }
         if (regionCodes.length > 0) {
             params.set('with_origin_country', regionCodes.join('|'));
+        }
+        if (keywordIds.length > 0) {
+            params.set('with_keywords', keywordIds.join('|'));
         }
 
         const url = `${API_BASE_URL}/discover/movie?${params.toString()}`;
@@ -78,5 +79,41 @@ export const getMovieDetails = async (movieId) => {
     } catch (error) {
         console.error("Error fetching movie details:", error);
         return null;
+    }
+};
+
+// Searches for a movie by title and returns its ID and basic information
+export const searchMovieByTitle = async (query) => {
+    try{
+        const url = `${API_BASE_URL}/search/movie?query=${encodeURIComponent(query)}&page=1`;
+        const response = await fetch(url, API_OPTIONS);
+
+        if (!response.ok){
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        return data.results?.[0] || null;
+    } catch (error) {
+        console.error("Error searching movies:", error);
+        return null;
+    }
+};
+
+// Fetches recommendations based on a specific movie ID (TMDB's similarity engine)
+export const getMovieRecommendations = async (movieId, currentPage = 1) => {
+    try {
+        const url = `${API_BASE_URL}/movie/${movieId}/recommendations?page=${currentPage}`;
+        const response = await fetch(url, API_OPTIONS);
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        return data.results || [];
+    } catch (error) {
+        console.error("Error fetching movie recommendations:", error);
+        return [];
     }
 };

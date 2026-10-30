@@ -1,10 +1,5 @@
-import React from 'react'
-
-// Notice: onClick is OUTSIDE the movie destructuring. 
-// It is a completely separate prop.
-const MovieCard = ({ movie: { id, title, vote_average, poster_path, release_date, original_language }, onClick }) => {
+const MovieCard = ({ movie: { title, vote_average, poster_path, release_date, original_language }, onClick }) => {
     return (
-        // Notice: All Tailwind classes are INSIDE the quotes for className.
         <button
             onClick={onClick}
             className="movie-card cursor-pointer hover:scale-105 transition-transform duration-300 w-full text-left"

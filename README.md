@@ -23,7 +23,8 @@
 
 - 🔍 **Debounced live search** across the full TMDB catalog
 - 🏆 **Trending Movies** — a community-driven top 5 built from real user searches (persisted in Appwrite)
-- 🎭 **Mood-based recommender** — pick genres, get heavy hitters only (rating ≥ 7.0 **and** 500+ votes), with paginated "show me different movies" refresh
+- 🎭 **Mood-based recommender** — pick genres, regions, or vibes to find popular movies, with paginated "show me different movies" refresh
+- 💬 **In-app recommendation messages** — validation and exhausted-result messages use a React modal instead of browser alerts; click the backdrop or **Got it** to dismiss
 - 🎬 **Cinematic details modal** — embedded YouTube trailer, top cast, runtime, rating, and a dynamic *"Who would enjoy this?"* audience profile
 - 🥇 **Cinema Gold theme** — warm near-black + champagne gold, film-festival aesthetic
 - ⚡ **Production-grade UX** — centered loading overlays, non-blanking grids, error states, zero console noise

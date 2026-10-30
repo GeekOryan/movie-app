@@ -1,4 +1,3 @@
-import React from 'react';
 import { useState, useEffect, useRef } from 'react';
 import { useDebounce } from './hooks/useDebounce';
 import Search from './components/Search';
@@ -47,9 +46,12 @@ const App = () => {
   };
 
   // trackSearch = false on refresh, so we don't inflate your trending counts
-  const fetchMovies = async (query = '', page = 1, trackSearch = true) => {
+  const fetchMovies = async (query = '', page = 1, trackSearch = true, resetPage = false) => {
     setIsLoading(true);
     setErrorMessage('');
+    if (resetPage) {
+      setCurrentPage(1);
+    }
 
     try {
       const endpoint = query
@@ -86,9 +88,13 @@ const App = () => {
   };
 
   useEffect(() => {
-    setCurrentPage(1);
     shownMovieIds.current.clear();
-    fetchMovies(debouncedSearchTerm, 1);
+
+    const loadMovies = async () => {
+      await fetchMovies(debouncedSearchTerm, 1, true, true);
+    };
+
+    loadMovies();
   }, [debouncedSearchTerm]);
 
   useEffect(() => {

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { getGenres, getRecommendations } from '../tmdb';
+import { searchMovieByTitle, getMovieRecommendations } from '../tmdb';
 import MovieCard from './MovieCard';
 import Spinner from './Spinner';
 
@@ -16,21 +17,53 @@ const REGIONS = [
     { id: 'latam', label: '🌎 Latin America', codes: ['MX', 'BR', 'AR', 'CO'] },
 ];
 
+const VIBES = [
+    { id: 'hood', label: '🏙️ Hood Classics', keywords: [10700, 33905, 10726] },  // hood, inner city, gang
+    { id: 'nordic', label: '❄️ Nordic Noir', keywords: [191820] },
+    { id: 'wuxia', label: '⚔️ Wuxia / Martial Arts', keywords: [184656] },
+    { id: 'cyberpunk', label: '🤖 Cyberpunk', keywords: [12190] },
+    { id: 'heist', label: '💰 Heist', keywords: [10051] },
+];
+
+const SEED_MOVIE_SUGGESTIONS = [
+    'John Wick',
+    'The Matrix',
+    'Parasite',
+    'The Dark Knight',
+    'Spirited Away',
+    'Mad Max: Fury Road',
+    'Get Out',
+    'Everything Everywhere All at Once',
+    'Moonlight',
+    'The Grand Budapest Hotel',
+    'City of God',
+    'Knives Out',
+];
+
 const GenreSelector = ({ onMovieClick }) => {
     const [genres, setGenres] = useState([]);
     const [selectedGenreIds, setSelectedGenreIds] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [recommendedMovies, setRecommendedMovies] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
-    const [showNoMoreMoviesModal, setShowNoMoreMoviesModal] = useState(false);
+    const [modalMessage, setModalMessage] = useState('');
+    const [selectedVibeIds, setSelectedVibeIds] = useState([]);
+    const [seedMovieTitle, setSeedMovieTitle] = useState('');
+    const [isSearching, setIsSearching] = useState(false);
+    const [showAllSeedSuggestions, setShowAllSeedSuggestions] = useState(false);
     const shownMovieIds = useRef(new Set());
     
     const [selectedRegionIds, setSelectedRegionIds] = useState([]);
 
     useEffect(() => {
         const fetchGenres = async () => {
-            const tmdbGenres = await getGenres();
-            setGenres(tmdbGenres);
+            try {
+                const tmdbGenres = await getGenres();
+                setGenres(tmdbGenres);
+            } catch (error) {
+                console.error('Error loading genres:', error);
+                setModalMessage('Unable to load genres. Please try again later.');
+            }
         };
         fetchGenres();
     }, []);
@@ -51,9 +84,21 @@ const GenreSelector = ({ onMovieClick }) => {
         }
     };
 
+    const toggleVibe = (vibeId) => {
+        if (selectedVibeIds.includes(vibeId)) {
+            setSelectedVibeIds(selectedVibeIds.filter(id => id !== vibeId));
+        } else {
+            setSelectedVibeIds([...selectedVibeIds, vibeId]);
+        }
+    };
+
     const selectedRegionCodes = REGIONS
         .filter((region) => selectedRegionIds.includes(region.id))
         .flatMap((region) => region.codes);
+
+    const selectedKeywordIds = VIBES
+        .filter((vibe) => selectedVibeIds.includes(vibe.id))
+        .flatMap((vibe) => vibe.keywords);
 
     const selectedRegionNames = REGIONS
         .filter((region) => selectedRegionIds.includes(region.id))
@@ -66,18 +111,20 @@ const GenreSelector = ({ onMovieClick }) => {
         .join(', ');
 
     const handleGetRecommendations = async () => {
-        if (selectedGenreIds.length === 0 && selectedRegionIds.length === 0) {
+        if (selectedGenreIds.length === 0 && selectedRegionIds.length === 0 && selectedVibeIds.length === 0) {
+            setModalMessage('Please select at least one genre, region, or vibe.');
             return;
         }
 
         setIsLoading(true);
         try {
-            const movies = await getRecommendations(selectedGenreIds, 1, selectedRegionCodes);
+            const movies = await getRecommendations(selectedGenreIds, 1, selectedRegionCodes, selectedKeywordIds);
             shownMovieIds.current = new Set(movies.map((movie) => movie.id));
             setCurrentPage(1);
             setRecommendedMovies(movies);
         } catch (error) {
             console.error("Error getting recommendations:", error);
+            setModalMessage('Unable to load recommendations. Please try again.');
         } finally {
             setIsLoading(false);
         }
@@ -87,7 +134,7 @@ const GenreSelector = ({ onMovieClick }) => {
         try {
             const nextPage = currentPage + 1;
             setIsLoading(true);
-            const movies = await getRecommendations(selectedGenreIds, nextPage, selectedRegionCodes);
+            const movies = await getRecommendations(selectedGenreIds, nextPage, selectedRegionCodes, selectedKeywordIds);
             const newMovies = movies.filter((movie) => !shownMovieIds.current.has(movie.id));
 
             if (newMovies.length > 0) {
@@ -95,17 +142,101 @@ const GenreSelector = ({ onMovieClick }) => {
                 setRecommendedMovies(newMovies);
                 setCurrentPage(nextPage);
             } else {
-                setShowNoMoreMoviesModal(true);
+                setModalMessage("That's it for the heavy hitters! Try mixing different genres or regions.");
             }
         } catch (error) {
             console.error("Failed to refresh movies:", error);
+            setModalMessage('Unable to load different movies. Please try again.');
         } finally {
             setIsLoading(false);
         }
     };
 
+    const handleSeedSearch = async () => {
+        if (!seedMovieTitle.trim()) {
+            setModalMessage('Please enter a movie title.');
+            return;
+        }
+
+        setIsSearching(true);
+        try {
+            const movie = await searchMovieByTitle(seedMovieTitle);
+
+            if (!movie) {
+                setModalMessage('Movie not found. Try a different title.');
+                return;
+            }
+
+            setCurrentPage(1);
+            const recommendations = await getMovieRecommendations(movie.id, 1);
+
+            setRecommendedMovies(recommendations);
+
+            setSeedMovieTitle('');
+        } catch (error) {
+            console.error("Error in seed search:", error);
+            setModalMessage('Something went wrong. Please try again.');
+        } finally {
+            setIsSearching(false);
+        }
+    };
+
+    const seedSuggestions = showAllSeedSuggestions
+        ? SEED_MOVIE_SUGGESTIONS
+        : SEED_MOVIE_SUGGESTIONS.slice(0, 5);
+
     return (
         <div className="mt-10 p-6 bg-dark-100 rounded-2xl shadow-inner shadow-light-100/10">
+            <div className="mb-8 rounded-2xl border border-light-100/10 bg-gradient-to-br from-dark-200 to-dark-100 p-6">
+                <h2 className="mb-2 text-2xl font-bold text-white">Find movies like...</h2>
+                <p className="mb-4 text-sm text-light-200">Type a movie you love, and we'll find similar heavy-hitters</p>
+
+                <div className="flex gap-3">
+                    <input
+                        type="text"
+                        value={seedMovieTitle}
+                        onChange={(e) => setSeedMovieTitle(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleSeedSearch()}
+                        placeholder="e.g., John Wick, The Matrix, Inception..."
+                        className="flex-1 rounded-lg border border-light-100/20 bg-dark-100 px-4 py-3 text-white placeholder-light-200/50 transition-all focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+                    />
+                    <button
+                        onClick={handleSeedSearch}
+                        disabled={isSearching || !seedMovieTitle.trim()}
+                        className="whitespace-nowrap rounded-lg bg-gradient-to-r from-[#f6e7c1] to-[#d4af37] px-6 py-3 font-bold text-primary transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                        {isSearching ? 'Searching...' : 'Find Similar'}
+                    </button>
+                </div>
+
+                <div className="mt-4 flex flex-wrap items-center gap-2">
+                    <span className="mr-1 text-xs text-light-200">Quick picks:</span>
+                    {seedSuggestions.map((movie) => (
+                        <button
+                            key={movie}
+                            onClick={() => setSeedMovieTitle(movie)}
+                            className="rounded-full border border-light-100/15 bg-light-100/5 px-3 py-1.5 text-xs font-medium text-light-100 transition-all hover:border-accent/60 hover:bg-accent/15 hover:text-white"
+                        >
+                            {movie}
+                        </button>
+                    ))}
+                    <button
+                        type="button"
+                        onClick={() => setShowAllSeedSuggestions((isExpanded) => !isExpanded)}
+                        aria-expanded={showAllSeedSuggestions}
+                        className="rounded-full border border-accent/40 px-3 py-1.5 text-xs font-semibold text-accent transition-all hover:bg-accent/10 hover:text-white"
+                    >
+                        {showAllSeedSuggestions ? 'Show fewer' : 'More picks'}
+                    </button>
+                </div>
+            </div>
+
+            <div className="mb-6 flex items-center gap-4">
+                <div className="h-px flex-1 bg-light-100/10"></div>
+                <span className="text-sm font-medium text-light-200">OR</span>
+                <div className="h-px flex-1 bg-light-100/10"></div>
+            </div>
+
             <h2 className="text-2xl font-bold text-white mb-2">What are you in the mood for?</h2>
             <p className="text-light-200 mb-5 text-sm">Select one or more genres and/or regions to get a personalized recommendation</p>
 
@@ -148,9 +279,29 @@ const GenreSelector = ({ onMovieClick }) => {
                 })}
             </div>
 
+            <p className="text-light-200 text-sm mt-6 mb-2">...Or pick a specific vibe?</p>
+<div className="flex flex-wrap gap-3">
+    {VIBES.map((vibe) => {
+        const isSelected = selectedVibeIds.includes(vibe.id);
+        return (
+            <button
+                key={vibe.id}
+                onClick={() => toggleVibe(vibe.id)}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 border ${
+                    isSelected
+                        ? 'bg-accent border-accent text-white scale-105 shadow-lg shadow-accent/20'
+                        : 'bg-transparent border-light-100/20 text-light-100 hover:bg-light-100/10 hover:border-light-100/40'
+                }`}
+            >
+                {vibe.label}
+            </button>
+        );
+    })}
+</div>
+
             <button
                 onClick={handleGetRecommendations}
-                disabled={isLoading || (selectedGenreIds.length === 0 && selectedRegionIds.length === 0)}
+                disabled={isLoading || (selectedGenreIds.length === 0 && selectedRegionIds.length === 0 && selectedVibeIds.length === 0)}
                 className="mt-6 w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-[#f6e7c1] to-[#d4af37] text-primary font-bold rounded-lg transition-opacity disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90"
             >
                 {isLoading ? 'Finding Movies...' : 'Get Recommendations'}
@@ -173,7 +324,7 @@ const GenreSelector = ({ onMovieClick }) => {
                     {isLoading ? (
                         <div className="flex justify-center py-10">
                             <Spinner />
-                       . </div>
+                        </div>
                     ) : (
                         <ul className="grid grid-cols-1 gap-5 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                             {recommendedMovies.map((movie) => (
@@ -185,32 +336,31 @@ const GenreSelector = ({ onMovieClick }) => {
                 </div>
             )}
 
-            {showNoMoreMoviesModal && (
+            {modalMessage && (
                 <div
                     className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
                     role="dialog"
                     aria-modal="true"
-                    aria-labelledby="no-more-movies-title"
-                    onClick={() => setShowNoMoreMoviesModal(false)}
+                    aria-labelledby="recommendation-message-title"
+                    onClick={() => setModalMessage('')}
                 >
                     <div
                         className="w-full max-w-md rounded-2xl bg-dark-100 p-6 text-center shadow-2xl"
                         onClick={(event) => event.stopPropagation()}
                     >
                         <h3
-                            id="no-more-movies-title"
+                            id="recommendation-message-title"
                             className="mb-3 text-2xl font-bold text-white"
                         >
-                            That's it for the heavy hitters!
+                            Movie recommendations
                         </h3>
 
                         <p className="mb-6 text-light-200">
-                            We couldn't find any more movies for this combination.
-                            Try mixing different genres or regions.
+                            {modalMessage}
                         </p>
 
                         <button
-                            onClick={() => setShowNoMoreMoviesModal(false)}
+                            onClick={() => setModalMessage('')}
                             className="rounded-lg bg-gradient-to-r from-[#f6e7c1] to-[#d4af37] px-6 py-3 font-bold text-primary transition-opacity hover:opacity-90"
                         >
                             Got it
